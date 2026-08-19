@@ -102,7 +102,7 @@ const AGENT_PAYLOAD = {
   reminder_trigger_ms: 5000,
   reminder_max_count: 2,
   pronunciation_dictionary: [
-    { word: 'Curucaye', alphabet: 'ipa', phoneme: 'ˌkʊɹəˈkaɪ' },
+    { word: 'Curucaye', alphabet: 'ipa', phoneme: 'ˈkuːɹəˌkaɪ' }, // KOO-ra-kai, per David 2026-08-19
     { word: 'Clunes', alphabet: 'ipa', phoneme: 'ˈkluːnɪs' }, // CLU-nis, per David
   ],
 };

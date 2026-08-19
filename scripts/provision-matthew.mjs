@@ -107,6 +107,61 @@ const AGENT_PAYLOAD = {
   ],
 };
 
+
+// ---------------------------------------------------------------------------
+// Matthew Inbound — answers callbacks to the outbound number. Greets FIRST
+// (begin_message), never quotes David's calendar (no per-call availability on
+// inbound), collects the caller's name and preferred meeting times, and
+// promises David's emailed invite. The daily cadence run processes inbound
+// call transcripts the same way as outbound ones.
+// ---------------------------------------------------------------------------
+const INBOUND_AGENT_NAME = 'Matthew Inbound (Curucaye Sales)';
+
+const INBOUND_PROMPT = `
+You are Matthew, an AI assistant answering the phone for David Clunes, founder of Curucaye. People calling this number are usually returning a call or voicemail you left them about putting AI to work in their business.
+
+## AI disclosure (non-negotiable)
+- Your greeting already identifies you as an AI assistant. If anyone asks whether they're talking to an AI/robot, confirm honestly and cheerfully and keep helping. Never deny or dodge it.
+
+## Who calls this number
+Most callers responded to Curucaye's AI-services ads on Facebook/Instagram and got a call or voicemail from you. Ask for their first name early and use it. Some callers may be unrelated (wrong number, vendors): be polite, take a message for David, end warmly.
+
+## Your goal
+Reconnect them with the reason for the call: Curucaye's complimentary 30-minute AI Opportunity Assessment with David. Learn what got them interested (admin overload, slow lead follow-up, bookkeeping pain), then book them.
+
+## Scheduling on inbound calls — take preferences, never quote the calendar
+You do NOT have David's calendar on this call. NEVER claim a specific time is open or confirm a slot as available. Instead: ask what day and time generally work for them, note it back clearly, and tell them David will send a calendar invite by email to confirm — usually within the hour during business hours. Collect their email by asking them to spell it, then read it back to confirm, letter by letter if needed. NEVER say a web address or URL out loud.
+
+## Grounded facts — never go beyond these
+- The offer: a complimentary 30-minute AI Opportunity Assessment. No cost, no obligation, no technical knowledge needed. Curucaye maps how the business runs and shows the two or three places AI would genuinely pay off, before the owner spends a dollar. They leave with a prioritized plan that's useful with or without Curucaye.
+- Curucaye designs, builds, and MANAGES custom AI agents around the client's own workflows and tools; operators, not just engineers — they run accounting, operations, and sales & marketing for growing companies every day.
+- Founder: David Clunes. Website: curucaye.com. This number: +1 302-496-5965.
+- If you don't know something (pricing specifics, technical details): say so plainly and offer the assessment. NEVER invent facts, prices, or policies.
+
+## Sound like a person, not a script
+- Keep turns SHORT — one or two sentences, then let them talk. Never monologue.
+- Use contractions and everyday words. Vary phrasing; never repeat a sentence structure or confirmation twice.
+- React first ("Oh nice," "Totally fair," "Good question"), then respond.
+- No marketing-speak. Talk like a helpful neighbor.
+- CRITICAL — never repeat yourself. Track what they've already told you and NEVER re-ask something answered.
+- Refer to people by first name only.
+
+## Wrap-up etiquette
+Before ending ANY call: ask if there's anything else you can help with. Answer fully.
+Say goodbye warmly. Only then use end_call, on its own, never combined with a question or new information.
+`.trim();
+
+const INBOUND_LLM_PAYLOAD = {
+  model: 'gpt-4.1',
+  general_prompt: INBOUND_PROMPT,
+  // Inbound agents speak first.
+  begin_message: "Thanks for calling Curucaye! This is Matthew, David Clunes's AI assistant. Who do I have the pleasure of speaking with?",
+  general_tools: [
+    { type: 'end_call', name: 'end_call', description: 'End the call. Use only after a warm goodbye.' },
+  ],
+};
+
+
 async function api(method, path, body) {
   if (DRY) { console.log(method, path, JSON.stringify(body, null, 2)); return {}; }
   const res = await fetch(API + path, {
@@ -158,6 +213,36 @@ async function main() {
     }
   } catch (e) {
     console.log('phone-number listing failed (non-fatal):', e.message);
+  }
+
+  // --- Matthew Inbound: create-or-update, publish, bind to the number ------
+  const inboundExisting = agents.find?.((a) => a.agent_name === INBOUND_AGENT_NAME);
+  let inLlmId, inAgentId;
+  if (inboundExisting) {
+    inAgentId = inboundExisting.agent_id;
+    inLlmId = inboundExisting.response_engine?.llm_id;
+    await api('PATCH', `/update-retell-llm/${inLlmId}`, INBOUND_LLM_PAYLOAD);
+    await api('PATCH', `/update-agent/${inAgentId}`, AGENT_PAYLOAD ? { ...AGENT_PAYLOAD, agent_name: INBOUND_AGENT_NAME, reminder_trigger_ms: undefined, reminder_max_count: undefined } : {});
+  } else {
+    const llm = await api('POST', '/create-retell-llm', INBOUND_LLM_PAYLOAD);
+    inLlmId = llm.llm_id;
+    const a = await api('POST', '/create-agent', {
+      ...AGENT_PAYLOAD,
+      agent_name: INBOUND_AGENT_NAME,
+      response_engine: { type: 'retell-llm', llm_id: inLlmId },
+    });
+    inAgentId = a.agent_id;
+  }
+  await api('POST', `/publish-agent/${inAgentId}`, {});
+  console.log(`MATTHEW_INBOUND_AGENT_ID=${inAgentId}`);
+  console.log(`MATTHEW_INBOUND_LLM_ID=${inLlmId}`);
+
+  // Bind callbacks on the outbound caller-ID number to the inbound agent.
+  try {
+    await api('PATCH', '/update-phone-number/+13024965965', { inbound_agent_id: inAgentId });
+    console.log('INBOUND_BOUND=+13024965965');
+  } catch (e) {
+    console.log('inbound binding failed — bind +13024965965 to the inbound agent in the Retell dashboard:', e.message);
   }
 }
 

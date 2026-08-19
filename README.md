@@ -23,8 +23,8 @@ infrastructure.
 
 | Thing | Value |
 |---|---|
-| Voice agent | `<MATTHEW_AGENT_ID>` — "Matthew (Curucaye Sales)" (fill in after provisioning) |
-| Outbound from-number | `<FROM_NUMBER_E164>` (pick from the numbers the provision script prints) |
+| Voice agent | `agent_56dfd33611ee7e345088a25ee9` — "Matthew (Curucaye Sales)" (LLM `llm_ec8cf92939ca3474ffd38b67c266`), provisioned 2026-08-19 |
+| Outbound from-number | `+13024965965` (unassigned Retell number; alternatives: +13023064872 "curucaye internal" — never use +13028467571, that is Cash Flow Compass Support/Cassie) |
 | Booking link | https://calendly.com/dclunessr |
 | Offer pages | https://curucaye.com/ai_opportunity_assessment · https://curucaye.com/custom_ai_agents |
 | HubSpot portal | 7064094 (contacts tagged `original_source_desc = BTJ Labs`) |

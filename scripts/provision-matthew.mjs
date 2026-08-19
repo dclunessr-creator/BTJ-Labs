@@ -108,8 +108,11 @@ async function api(method, path, body) {
     headers: { Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${await res.text()}`);
-  return res.status === 204 ? {} : res.json();
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${text}`);
+  // Some endpoints (e.g. publish-agent) return 2xx with an empty body.
+  if (!text) return {};
+  try { return JSON.parse(text); } catch { return { raw: text }; }
 }
 
 async function main() {

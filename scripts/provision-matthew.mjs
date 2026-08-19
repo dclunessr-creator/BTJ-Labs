@@ -17,7 +17,8 @@ const KEY = process.env.RETELL_API_KEY;
 const DRY = process.argv.includes('--dry-run');
 
 const AGENT_NAME = 'Matthew (Curucaye Sales)';
-const VOICE_ID = '11labs-Adrian'; // male; swap for preferred voice from dashboard
+// Voice: overridable per run; default is a deeper masculine voice (Adrian read as too feminine on the 2026-08-19 test call).
+const VOICE_ID = process.env.MATTHEW_VOICE_ID || '11labs-Brian';
 
 // ---------------------------------------------------------------------------
 // Prompt. Section headers are load-bearing — keep them stable across edits and
@@ -90,7 +91,7 @@ const AGENT_PAYLOAD = {
   language: 'en-US',
   voice_temperature: 1.08,
   responsiveness: 0.8,
-  interruption_sensitivity: 0.6,
+  interruption_sensitivity: 0.8, // 0.6 blocked the callee from interrupting on the 2026-08-19 test call
   enable_backchannel: true,
   backchannel_frequency: 0.6,
   end_call_after_silence_ms: 10000,
@@ -98,6 +99,7 @@ const AGENT_PAYLOAD = {
   reminder_max_count: 2,
   pronunciation_dictionary: [
     { word: 'Curucaye', alphabet: 'ipa', phoneme: 'ˌkʊɹəˈkaɪ' },
+    { word: 'Clunes', alphabet: 'ipa', phoneme: 'ˈkluːnɪs' }, // CLU-nis, per David
   ],
 };
 

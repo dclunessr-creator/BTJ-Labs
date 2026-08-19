@@ -1,0 +1,10 @@
+{
+  "name": "btj-labs-functions",
+  "description": "BTJ Labs cloud functions (Matthew inbound webhook)",
+  "engines": { "node": "20" },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-functions": "^6.1.0"
+  },
+  "private": true
+}

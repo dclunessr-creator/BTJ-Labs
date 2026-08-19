@@ -37,6 +37,30 @@ infrastructure.
   answering services / live attendants, IVR navigation (press_digit), voicemail,
   wrap-up etiquette, grounded Curucaye facts from the two offer pages.
 
+## Phase 2 — live inbound scheduling (functions/)
+
+`functions/` is a Firebase codebase (`btj`) deployed into the existing
+`website-redesign-sales-agent` project so it shares that project's secrets
+(`MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `HUBSPOT_API_KEY`).
+`matthewInboundWebhook` answers Retell's call_inbound event: looks the caller
+up in HubSpot by phone, computes David's LIVE availability from Graph (same
+busy rule as the cadence), and returns Matthew Inbound + dynamic variables so
+inbound callers can schedule on the call exactly like outbound. Failures
+degrade to empty variables; the prompt then falls back to taking preferences.
+
+Deploy (from a machine with Firebase access):
+
+```bash
+cd functions && npm install
+npx firebase-tools login          # once
+npx firebase-tools deploy --only functions:btj --project website-redesign-sales-agent
+# then point the number at the printed function URL:
+RETELL_API_KEY=... node ../scripts/bind-inbound-webhook.mjs <function-url>
+```
+
+Deploy ONLY with `--only functions:btj` — a bare deploy would touch the
+redesign project's other resources.
+
 ## Provisioning / updating Matthew
 
 ```bash

@@ -75,8 +75,7 @@ Businesses often gate their phones. Stay honest, brief, and polite — never pus
 If you reach voicemail, leave ONE brief message (under 20 seconds): who you are (AI assistant for David Clunes at Curucaye), that you're following up on their AI inquiry, that David has sent them an email, and the callback number {{callback_number}}. Then end the call WITHOUT using any other tools. Never leave a second voicemail on the same call.
 
 ## Wrap-up etiquette
-Before ending ANY call: ask if there's anything else you can help with. Answer fully.
-Say goodbye warmly. Only then use end_call, on its own, never combined with a question or new information.
+Before ending ANY call: ask if there's anything else you can help with — then STOP and WAIT for their answer. Never answer your own question, and never say goodbye in the same turn as the question. If they raise something, address it fully and ask again. Only after they indicate they're done do you say a warm goodbye, and only then use end_call, on its own, never combined with a question or new information.
 `.trim();
 
 const LLM_PAYLOAD = {
@@ -130,7 +129,7 @@ Most callers responded to Curucaye's AI-services ads on Facebook/Instagram and g
 Reconnect them with the reason for the call: Curucaye's complimentary 30-minute AI Opportunity Assessment with David. Learn what got them interested (admin overload, slow lead follow-up, bookkeeping pain), then book them.
 
 ## Caller context (from the inbound webhook)
-Today is {{current_date}} ({{timezone}}). If {{known_lead}} is "true", the caller is likely {{first_name}} — confirm naturally ("Is this {{first_name}}? Great to hear from you!") but never insist; anyone can call from a known number.
+Today is {{current_date}} ({{timezone}}). Your greeting was already spoken when the call connected: "{{greeting}}". If it asked "Is this {{first_name}}?", listen for their confirmation — if it's someone else, adjust warmly and use THEIR name; anyone can call from a known number. If it asked who's calling, use the name they give.
 
 ## Scheduling — propose real times, never read links
 David's open times for the next two weeks: {{availability}}. If that list is NON-EMPTY, schedule exactly like this: propose ONE near-term option conversationally; if it doesn't suit, offer one alternative or check their preferred day against the list. CRITICAL — verify EVERY time against the list, EVERY time it comes up: first proposal, change of mind, or a switch at any point in the call. Never confirm a time from conversational momentum; the list is the only source of truth. If a requested time isn't open, say that slot is taken and offer the nearest alternative. When they agree to a listed-open time, repeat it back clearly and tell them a calendar invite will arrive by email shortly.
@@ -152,15 +151,15 @@ Either way, collect their email by asking them to spell it, then read it back to
 - Refer to people by first name only.
 
 ## Wrap-up etiquette
-Before ending ANY call: ask if there's anything else you can help with. Answer fully.
-Say goodbye warmly. Only then use end_call, on its own, never combined with a question or new information.
+Before ending ANY call: ask if there's anything else you can help with — then STOP and WAIT for their answer. Never answer your own question, and never say goodbye in the same turn as the question. If they raise something, address it fully and ask again. Only after they indicate they're done do you say a warm goodbye, and only then use end_call, on its own, never combined with a question or new information.
 `.trim();
 
 const INBOUND_LLM_PAYLOAD = {
   model: 'gpt-4.1',
   general_prompt: INBOUND_PROMPT,
-  // Inbound agents speak first.
-  begin_message: "Thanks for calling Curucaye! This is Matthew, David Clunes's AI assistant. Who do I have the pleasure of speaking with?",
+  // Inbound agents speak first. The webhook composes the whole line per
+  // caller (known lead -> greets by name), so this is pure substitution.
+  begin_message: "{{greeting}}",
   general_tools: [
     { type: 'end_call', name: 'end_call', description: 'End the call. Use only after a warm goodbye.' },
   ],

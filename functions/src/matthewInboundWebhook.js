@@ -211,6 +211,9 @@ async function handleMatthewInbound(req, res) {
   else console.error('[matthewInbound] availability failed:', aRes.reason?.message);
 
   const firstName = contact?.properties?.firstname || '';
+  const greeting = firstName
+    ? `Thanks for calling Curucaye! This is Matthew, David Clunes's AI assistant. Is this ${firstName}?`
+    : "Thanks for calling Curucaye! This is Matthew, David Clunes's AI assistant. Who do I have the pleasure of speaking with?";
   const nowStr = new Date().toLocaleString('en-US', {
     timeZone: HOST_TZ, weekday: 'long', month: 'long', day: 'numeric',
     year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
@@ -220,6 +223,7 @@ async function handleMatthewInbound(req, res) {
     call_inbound: {
       override_agent_id: MATTHEW_INBOUND_AGENT_ID,
       dynamic_variables: {
+        greeting: String(greeting),
         first_name: String(firstName),
         known_lead: String(!!contact),
         availability: String(availability),

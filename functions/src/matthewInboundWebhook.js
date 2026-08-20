@@ -211,9 +211,12 @@ async function handleMatthewInbound(req, res) {
   else console.error('[matthewInbound] availability failed:', aRes.reason?.message);
 
   const firstName = contact?.properties?.firstname || '';
+  // Phonetic respellings — the TTS speaks this text verbatim, and ElevenLabs
+  // voices apply IPA dictionary entries unreliably. Real spellings: Curucaye,
+  // Clunes (pronounced Koo-rah-kye, Cloo-nis).
   const greeting = firstName
-    ? `Thanks for calling Curucaye! This is Matthew, an AI assistant for David Clunes. Is this ${firstName}?`
-    : 'Thanks for calling Curucaye! This is Matthew, an AI assistant for David Clunes. Who do I have the pleasure of speaking with?';
+    ? `Thanks for calling Koo-rah-kye! This is Matthew, an AI assistant for David Cloo-nis. Is this ${firstName}?`
+    : 'Thanks for calling Koo-rah-kye! This is Matthew, an AI assistant for David Cloo-nis. Who do I have the pleasure of speaking with?';
   const nowStr = new Date().toLocaleString('en-US', {
     timeZone: HOST_TZ, weekday: 'long', month: 'long', day: 'numeric',
     year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short',

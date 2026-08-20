@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/provision-matthew.mjs)",
+      "Bash(node scripts/provision-matthew.mjs:*)",
+      "Bash(node scripts/fire-call.mjs:*)",
+      "Bash(node scripts/get-call.mjs:*)",
+      "Bash(node scripts/bind-inbound-webhook.mjs:*)",
+      "Bash(node --check:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

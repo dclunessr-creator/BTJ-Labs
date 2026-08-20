@@ -1,0 +1,18 @@
+{
+  "from_number": "+13024965965",
+  "to_number": "+16017788053",
+  "override_agent_id": "agent_56dfd33611ee7e345088a25ee9",
+  "metadata": {
+    "crm_contact_id": "242549069995",
+    "source": "btj-cadence",
+    "cadence_call": "1"
+  },
+  "retell_llm_dynamic_variables": {
+    "first_name": "Fredrick",
+    "call_context": "They responded to Curucaye's AI-services ad on Facebook/Instagram around July 23; BTJ Labs tried for 10 days but never booked them.",
+    "current_date": "Thursday, August 20, 2026 (Eastern)",
+    "timezone": "America/New_York (Eastern)",
+    "availability": "Thu 8/20: 11am-1pm, 1:30-5pm; Fri 8/21: 10am-1:30pm, 3-5pm; Mon 8/24: 10am-5pm; Tue 8/25: 10am-5pm; Wed 8/26: 10am-12pm, 1-2pm, 3-4pm, 4:30-5pm; Thu 8/27: 10am-1pm, 1:30-5pm; Fri 8/28: 10am-2pm, 3-5pm; Mon 8/31: 10am-5pm; Tue 9/1: 10am-5pm; Wed 9/2: 10am-12pm, 1-2pm, 3-5pm (all Eastern)",
+    "callback_number": "+1 302-496-5965"
+  }
+}

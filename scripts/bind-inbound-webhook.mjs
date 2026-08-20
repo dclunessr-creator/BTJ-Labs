@@ -14,7 +14,7 @@ if (!url || !url.startsWith('https://')) {
 const res = await fetch('https://api.retellai.com/update-phone-number/+13024965965', {
   method: 'PATCH',
   headers: { Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ inbound_webhook_url: url, inbound_agent_id: null }),
+  body: JSON.stringify({ inbound_webhook_url: url }),
 });
 const text = await res.text();
 if (!res.ok) throw new Error(`update-phone-number -> ${res.status}: ${text}`);

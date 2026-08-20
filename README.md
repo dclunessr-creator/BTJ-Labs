@@ -23,7 +23,8 @@ infrastructure.
 
 | Thing | Value |
 |---|---|
-| Voice agent | `agent_56dfd33611ee7e345088a25ee9` — "Matthew (Curucaye Sales)" (LLM `llm_ec8cf92939ca3474ffd38b67c266`), provisioned 2026-08-19 |
+| Voice agent (outbound) | `agent_56dfd33611ee7e345088a25ee9` — "Matthew (Curucaye Sales)" (LLM `llm_ec8cf92939ca3474ffd38b67c266`), provisioned 2026-08-19 |
+| Voice agent (inbound) | `agent_fadfc0fa9bf090edba6ea7e64a` — "Matthew Inbound (Curucaye Sales)" (LLM `llm_6d888536efbc9439c9005eca4bd1`), provisioned 2026-08-19. Number binding is WEBHOOK-ONLY (Retell removed direct inbound_agent_id binding 2026-03) — the inbound webhook must be deployed and bound for callbacks to be answered |
 | Outbound from-number | `+13024965965` (unassigned Retell number; alternatives: +13023064872 "curucaye internal" — never use +13028467571, that is Cash Flow Compass Support/Cassie) |
 | Booking link | https://calendly.com/dclunessr |
 | Offer pages | https://curucaye.com/ai_opportunity_assessment · https://curucaye.com/custom_ai_agents |

@@ -101,8 +101,13 @@ const AGENT_PAYLOAD = {
   reminder_trigger_ms: 5000,
   reminder_max_count: 2,
   pronunciation_dictionary: [
-    { word: 'Curucaye', alphabet: 'ipa', phoneme: 'ˈkuːɹəˌkaɪ' }, // KOO-ra-kai, per David 2026-08-19
-    { word: 'Clunes', alphabet: 'ipa', phoneme: 'ˈkluːnɪs' }, // CLU-nis, per David
+    // COO-rah-kai (ai like eye) and CLU-nis, per David 2026-08-19/20.
+    // Possessive forms are separate tokens for TTS — cover them too, and the
+    // prompts avoid possessives ("an AI assistant for David Clunes").
+    { word: 'Curucaye', alphabet: 'ipa', phoneme: 'ˈkuːɹɑːˌkaɪ' },
+    { word: "Curucaye's", alphabet: 'ipa', phoneme: 'ˈkuːɹɑːˌkaɪz' },
+    { word: 'Clunes', alphabet: 'ipa', phoneme: 'ˈkluːnɪs' },
+    { word: "Clunes's", alphabet: 'ipa', phoneme: 'ˈkluːnɪsɪz' },
   ],
 };
 

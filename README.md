@@ -63,6 +63,58 @@ RETELL_API_KEY=... node ../scripts/bind-inbound-webhook.mjs <function-url>
 Deploy ONLY with `--only functions:btj` — a bare deploy would touch the
 redesign project's other resources.
 
+## Phase 3 — push notifications instead of polling (matthewCallEvents)
+
+Callbacks and call outcomes used to be found by a scheduled Claude session that
+spawned a helper container to run `scripts/list-calls.mjs`. Each of those checks
+cost real money and almost always returned nothing. `matthewCallEvents` inverts
+it: Retell POSTs when a call finishes, and the function writes the outcome to the
+lead's HubSpot record and emails David — a **callback alert** for inbound, a
+**call report** for outbound, both with recording link, transcript, and flags for
+a likely booking or opt-out. Nothing has to go looking.
+
+The two webhooks are wired in different places and receive different events:
+
+| Function | Wired on | Receives |
+|---|---|---|
+| `matthewInboundWebhook` | the phone number's `inbound_webhook_url` | `call_inbound` only (mid-call; must answer with the agent + variables) |
+| `matthewCallEvents` | each agent's `webhook_url` | `call_started` / `call_ended` / `call_analyzed` (acts on `call_analyzed`) |
+
+Setup, once:
+
+```bash
+# 1. Create the shared secret the endpoint is gated on. It writes to the CRM and
+#    sends mail, so it refuses unauthenticated requests.
+TOKEN=$(openssl rand -hex 16)
+printf '%s' "$TOKEN" | gcloud secrets create BTJ_WEBHOOK_TOKEN --data-file=- \
+  --project=website-redesign-sales-agent
+
+# 2. Deploy (also picks up any pending inbound-greeting changes).
+cd functions && npm install
+npx firebase-tools deploy --only functions:btj --project website-redesign-sales-agent
+
+# 3. Point both agents at the printed matthewCallEvents URL, token included.
+MATTHEW_EVENTS_WEBHOOK_URL="<matthewCallEvents URL>?token=$TOKEN" \
+  RETELL_API_KEY=<key> node ../scripts/provision-matthew.mjs
+```
+
+`provision-matthew.mjs` prints `CALL_EVENTS_WEBHOOK=` on success. Running it
+*without* `MATTHEW_EVENTS_WEBHOOK_URL` leaves any existing webhook untouched
+rather than clearing it, so a routine re-provision can't silently unhook this.
+
+**Graph permission:** the email uses app-only `sendMail`, which needs the
+**`Mail.Send` application permission** (admin-consented) on the app registration
+behind `MS_CLIENT_ID` — the same app that already holds `Calendars.Read`. Without
+it the HubSpot note still lands and the function logs
+`[callEvents] email failed: sendMail 403`; check the Cloud Run logs if a call
+appears in HubSpot but no email arrives.
+
+Verify the handler without placing a call:
+
+```bash
+cd functions && node test/smoke-call-events.mjs   # offline: no creds, no network
+```
+
 ## Provisioning / updating Matthew
 
 ```bash

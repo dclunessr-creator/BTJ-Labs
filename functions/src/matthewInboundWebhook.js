@@ -22,32 +22,8 @@
 // Filled from INBOUND.md after `scripts/provision-matthew.mjs` runs.
 const MATTHEW_INBOUND_AGENT_ID = 'agent_fadfc0fa9bf090edba6ea7e64a';
 
-const HOST_UPN = 'dclunessr@curucaye.com';
-const HOST_TZ = 'America/New_York';
-const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
-const HS_BASE = 'https://api.hubapi.com';
-
-// --- Graph app-only token (client credentials), cached to ~60s before expiry
-let _tok = null;
-let _exp = 0;
-async function graphToken() {
-  if (_tok && Date.now() < _exp - 60_000) return _tok;
-  const body = new URLSearchParams({
-    client_id: process.env.MS_CLIENT_ID,
-    client_secret: process.env.MS_CLIENT_SECRET,
-    scope: 'https://graph.microsoft.com/.default',
-    grant_type: 'client_credentials',
-  });
-  const res = await fetch(
-    `https://login.microsoftonline.com/${process.env.MS_TENANT_ID}/oauth2/v2.0/token`,
-    { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body }
-  );
-  if (!res.ok) throw new Error(`graph token ${res.status}: ${await res.text()}`);
-  const j = await res.json();
-  _tok = j.access_token;
-  _exp = Date.now() + (j.expires_in || 3600) * 1000;
-  return _tok;
-}
+const { GRAPH_BASE, HOST_UPN, HOST_TZ, graphToken } = require('./graph');
+const { findContactByPhone } = require('./hubspot');
 
 // --- ET wall-clock helpers (no external tz libs) ------------------------
 function etParts(date) {
@@ -162,35 +138,7 @@ async function computeAvailability() {
   return dayLabels.join('; ') + (dayLabels.length ? ' (all Eastern)' : '');
 }
 
-// --- HubSpot caller lookup ----------------------------------------------
-function phoneVariants(raw) {
-  const d10 = String(raw || '').replace(/\D/g, '').slice(-10);
-  if (d10.length !== 10) return [];
-  const a = d10.slice(0, 3), b = d10.slice(3, 6), c = d10.slice(6);
-  return [d10, `1${d10}`, `+1${d10}`, `(${a}) ${b}-${c}`, `${a}-${b}-${c}`, `${a}.${b}.${c}`];
-}
-async function findContactByPhone(fromNumber) {
-  const variants = phoneVariants(fromNumber);
-  if (!variants.length) return null;
-  const res = await fetch(`${HS_BASE}/crm/v3/objects/contacts/search`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      filterGroups: [
-        { filters: [{ propertyName: 'phone', operator: 'IN', values: variants }] },
-        { filters: [{ propertyName: 'mobilephone', operator: 'IN', values: variants }] },
-      ],
-      properties: ['firstname', 'lastname', 'original_source_desc', 'hs_lead_status'],
-      limit: 1,
-    }),
-  });
-  if (!res.ok) throw new Error(`hubspot search ${res.status}: ${await res.text()}`);
-  const j = await res.json();
-  return j.results?.[0] || null;
-}
+// Caller lookup lives in ./hubspot (shared with matthewCallEvents).
 
 // --- Handler --------------------------------------------------------------
 async function handleMatthewInbound(req, res) {

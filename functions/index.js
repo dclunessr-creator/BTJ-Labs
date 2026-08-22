@@ -10,6 +10,7 @@
 
 const { onRequest } = require('firebase-functions/v2/https');
 const { handleMatthewInbound } = require('./src/matthewInboundWebhook');
+const { handleMatthewCallEvents } = require('./src/matthewCallEvents');
 
 /**
  * matthewInboundWebhook
@@ -26,4 +27,31 @@ exports.matthewInboundWebhook = onRequest(
     secrets: ['HUBSPOT_API_KEY', 'MS_TENANT_ID', 'MS_CLIENT_ID', 'MS_CLIENT_SECRET'],
   },
   handleMatthewInbound
+);
+
+/**
+ * matthewCallEvents
+ * Retell agent-level webhook: fires when a call finishes. Logs the outcome to
+ * the lead's HubSpot record and emails David a callback alert (inbound) or a
+ * call report (outbound), with recording and transcript.
+ *
+ * This is what makes the pipeline push instead of poll — no scheduled session
+ * has to go hunting for callbacks or call outcomes.
+ *
+ * One-time setup: set this function's URL — WITH its ?token=... — as the
+ * `webhook_url` on both Matthew agents (scripts/provision-matthew.mjs reads it
+ * from MATTHEW_EVENTS_WEBHOOK_URL).
+ */
+exports.matthewCallEvents = onRequest(
+  {
+    timeoutSeconds: 60,
+    secrets: [
+      'BTJ_WEBHOOK_TOKEN',
+      'HUBSPOT_API_KEY',
+      'MS_TENANT_ID',
+      'MS_CLIENT_ID',
+      'MS_CLIENT_SECRET',
+    ],
+  },
+  handleMatthewCallEvents
 );

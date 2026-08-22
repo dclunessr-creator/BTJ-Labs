@@ -112,6 +112,15 @@ const AGENT_PAYLOAD = {
     { word: 'Clunes', alphabet: 'ipa', phoneme: 'ˈkluːnɪs' },
     { word: "Clunes's", alphabet: 'ipa', phoneme: 'ˈkluːnɪsɪz' },
   ],
+  // Where Retell POSTs call_started / call_ended / call_analyzed. The
+  // matthewCallEvents function turns those into HubSpot notes and David's
+  // callback alerts / call reports, which is what lets the pipeline stop
+  // polling for outcomes. Must include the ?token=... it is deployed with.
+  // Omitted (rather than blanked) when unset, so a run without the env var
+  // never silently unhooks a webhook that is already live.
+  ...(process.env.MATTHEW_EVENTS_WEBHOOK_URL
+    ? { webhook_url: process.env.MATTHEW_EVENTS_WEBHOOK_URL }
+    : {}),
 };
 
 
@@ -258,6 +267,17 @@ async function main() {
     console.log('INBOUND_BOUND=+13024965965');
   } catch (e) {
     console.log('inbound binding failed — bind +13024965965 to the inbound agent in the Retell dashboard:', e.message);
+  }
+
+  // Say plainly whether call outcomes will reach HubSpot and David's inbox on
+  // their own, so a run that quietly left the pipeline polling is obvious.
+  if (process.env.MATTHEW_EVENTS_WEBHOOK_URL) {
+    const shown = process.env.MATTHEW_EVENTS_WEBHOOK_URL.replace(/token=[^&]+/, 'token=***');
+    console.log(`CALL_EVENTS_WEBHOOK=${shown} (set on both agents)`);
+  } else {
+    console.log('CALL_EVENTS_WEBHOOK=<unset> — MATTHEW_EVENTS_WEBHOOK_URL was not provided,');
+    console.log('  so any existing webhook was left as-is. Call outcomes will NOT be pushed');
+    console.log('  to HubSpot/email unless that webhook is already configured on the agents.');
   }
 }
 
